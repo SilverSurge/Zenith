@@ -11,16 +11,16 @@ import (
 
 func (m Model) HelpView() string {
 	keys := [][]string{
-		{"j/k", "Move cursor Up/Down"},
-		{"h/l", "Previous/Next Day"},
-		{"t", "Jump to Today"},
-		{"n", "New Task"},
-		{"e", "Edit Task"},
-		{" ", "Toggle Complete"},
-		{"d", "Delete Task"},
-		{"/", "Search Tasks"},
-		{"g", "Go to Date"},
-		{"q", "Quit"},
+		{"j/k", "move cursor up/down"},
+		{"h/l", "previous/next day"},
+		{"t", "jump to today"},
+		{"n", "new task/script"},
+		{"e", "edit task/script"},
+		{"space", "toggle complet"},
+		{"d", "delete task/script"},
+		{"/", "search task"},
+		{"g", "go to date yyyy-mm-dd"},
+		{"q", "quit"},
 	}
 
 	var s strings.Builder
@@ -59,22 +59,22 @@ func (m Model) View() string {
 
 	// --- Header ---
 	header := HeaderStyle.Render(" ZENITH ")
-	
+
 	// Tabs
 	taskTabStyle := lipgloss.NewStyle().Padding(0, 1)
 	scriptTabStyle := lipgloss.NewStyle().Padding(0, 1)
 
 	if m.ActiveTab == TaskTab {
-		taskTabStyle = taskTabStyle.Background(GrayColor).Foreground(lipgloss.Color("230")).Bold(true)
+		taskTabStyle = scriptTabStyle.Foreground(AccentColor).Bold(true)
 	} else {
-		scriptTabStyle = scriptTabStyle.Background(GrayColor).Foreground(lipgloss.Color("230")).Bold(true)
+		scriptTabStyle = scriptTabStyle.Foreground(AccentColor).Bold(true)
 	}
 
-	tabs := lipgloss.JoinHorizontal(lipgloss.Bottom, 
+	tabs := lipgloss.JoinHorizontal(lipgloss.Bottom,
 		taskTabStyle.Render(" Tasks "),
 		scriptTabStyle.Render(" Scripts "),
 	)
-	
+
 	topBar := lipgloss.JoinHorizontal(lipgloss.Center, header, "  ", tabs)
 
 	// --- Main Content ---
@@ -110,9 +110,9 @@ func (m Model) viewTasks() string {
 			cur = lipgloss.NewStyle().Foreground(AccentColor).Render("❯")
 		}
 
-		icon := "🟪"
+		icon := "[ ]"
 		if t.Completed {
-			icon = "☑"
+			icon = "[x]"
 		}
 
 		style := lipgloss.NewStyle()
@@ -122,12 +122,14 @@ func (m Model) viewTasks() string {
 			style = style.Foreground(RedColor).Bold(true)
 		}
 
+		titleWithIcon := icon + " " + t.Title;
 		row := lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			CursorCol.Render(cur),
-			CheckCol.Render(icon),
-			style.Render(t.Title),
+			// CheckCol.Render(icon),
+			style.Render(titleWithIcon),
 		)
+
 		list.WriteString(row + "\n")
 	}
 
@@ -155,7 +157,7 @@ func (m Model) PagedScripts() []model.Script {
 func (m Model) viewScripts() string {
 	var list strings.Builder
 	list.WriteString("\n")
-	list.WriteString(lipgloss.NewStyle().Bold(true).Foreground(AccentColor).Render(" AUTOMATION SCRIPTS") + "\n\n")
+	list.WriteString(lipgloss.NewStyle().Bold(true).Foreground(AccentColor).Render(" Automation Scripts") + "\n\n")
 
 	paged := m.PagedScripts()
 	for i, s := range paged {
@@ -172,7 +174,7 @@ func (m Model) viewScripts() string {
 		)
 		list.WriteString(row + "\n")
 	}
-	
+
 	// Pad empty space
 	for i := len(paged); i < m.PageSize(); i++ {
 		list.WriteString("\n")
@@ -194,8 +196,8 @@ func (m Model) viewTaskFooter() string {
 	case GotoDateState:
 		return "\n " + lipgloss.NewStyle().Foreground(AccentColor).Render("GO TO DATE:") + " " + m.DateInput.View()
 	default:
-		pageInfo := fmt.Sprintf(" Page %d / %d ", m.Page+1, m.TotalPages())
-		return GrayTextStyle.Render("\n /: search • ?: help • Tab: Switch • " + pageInfo)
+		pageInfo := fmt.Sprintf(" page %d / %d ", m.Page+1, m.TotalPages())
+		return FooterTextStyle.Render("\n /: search • ?: help • tab: switch • " + pageInfo)
 	}
 }
 
@@ -228,8 +230,8 @@ func (m Model) viewScriptFooter() string {
 		}
 		return "\n " + lipgloss.NewStyle().Foreground(AccentColor).Render(label) + " " + m.TextInput.View()
 	default:
-		pageInfo := fmt.Sprintf(" Page %d / %d ", m.ScriptPage+1, m.ScriptTotalPages())
-		return GrayTextStyle.Render("\n Enter: Run • n: New • e: Edit • d: Delete • Tab: Switch • " + pageInfo)
+		pageInfo := fmt.Sprintf(" page %d / %d ", m.ScriptPage+1, m.ScriptTotalPages())
+		return FooterTextStyle.Render("\n enter: run • tab: switch • " + pageInfo)
 	}
 }
 

@@ -43,7 +43,7 @@ func LoadScripts() []model.Script {
 	if err != nil {
 		// Return default scripts if none exist
 		return []model.Script{
-			{Name: "Hello", Command: "echo 'Hello World'", Description: "Prints Hello World"},
+			{Name: "hello-world", Command: "echo 'hello world'", Description: "prints hello world"},
 		}
 	}
 	var scripts []model.Script
